@@ -1,4 +1,5 @@
 const outputs = [];
+const k = 10;
 
 const onScoreUpdate = (dropPosition, bounciness, size, bucketLabel) => {
   outputs.push([dropPosition, bounciness, size, bucketLabel]);
@@ -6,18 +7,23 @@ const onScoreUpdate = (dropPosition, bounciness, size, bucketLabel) => {
 
 const runAnalysis = () => {
   const testSetSize = 100;
-  const [testSet, trainingSet] = splitDataset(minMax(outputs, 3), testSetSize);
 
-  _.range(1, 20).forEach((k) => {
+  _.range(0, 3).forEach((feature) => {
+    const selectiveData = _.map(outputs, (row) => [row[feature], _.last(row)]);
+    const [testSet, trainingSet] = splitDataset(
+      minMax(selectiveData, 1),
+      testSetSize
+    );
+
     const accuracy = _.chain(testSet)
       .filter((testPoint) => {
-        return knn(trainingSet, _.initial(testPoint), k) === testPoint[3];
+        return knn(trainingSet, _.initial(testPoint), k) === _.last(testPoint);
       })
       .size()
       .divide(testSetSize)
       .value();
 
-    console.log("For K = ", k, ": ", accuracy);
+    console.log("For feature = ", feature, ": ", accuracy);
   });
 };
 
